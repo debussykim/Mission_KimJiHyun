@@ -2,10 +2,10 @@ package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
 import com.ll.gramgram.base.rq.Rq;
 import com.ll.gramgram.base.rsData.RsData;
-import com.ll.gramgram.boundedContext.instaMember.controller.InstaMemberController;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.service.LikeablePersonService;
+import com.ll.gramgram.boundedContext.member.entity.Member;
 import jakarta.validation.Valid;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,12 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
-import java.security.Principal;
 import java.util.List;
 
 @Controller
@@ -65,10 +61,11 @@ public class LikeablePersonController {
     }
 
     @PreAuthorize("isAuthenticated()")
-    @PostMapping("/delete")
-    public String delete(@PathVariable Long id) {
-        likeablePersonService.delete(id);
+    @PostMapping("/delete/{id}")
+    public String delete(@RequestParam Integer id) {
+        Member member = rq.getMember();
+        RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(id, member);
 
-        return rq.redirectWithMsg("/list", "삭제되었습니다.");
+        return rq.redirectWithMsg("/likeablePerson/list", deleteRsData);
     }
 }

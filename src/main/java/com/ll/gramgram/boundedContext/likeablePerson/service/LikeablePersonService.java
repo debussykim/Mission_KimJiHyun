@@ -14,6 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
@@ -58,19 +59,20 @@ public class LikeablePersonService {
     }
 
     @Transactional
-    public RsData<LikeablePerson> delete(@RequestParam("id") Long id) {
+    public RsData<LikeablePerson> delete(@PathVariable Integer id, Member member) {
         Optional<LikeablePerson> opLikeablePerson = likeablePersonRepository.findById(id);
         if (opLikeablePerson.isEmpty()) {
-            return RsData.of("F-1", "호감상대가 존재하지 않습니다.".formatted(id));
+            return RsData.of("F-1", "호감상대가 존재하지 않습니다.");
         }
 
         LikeablePerson likeablePerson = opLikeablePerson.get();
-        if (!likeablePerson.getFromInstaMember().getId().equals(instaMemberService.findByUsername())) {
+
+        if (!likeablePerson.getFromInstaMember().getId().equals(member.getInstaMember().getId())) {
             return RsData.of("F-2", "호감 상대를 삭제할 수 있는 권한이 없습니다.");
         }
 
-        likeablePersonRepository.deleteById(id); // delteById(likeablePerson.getId());
-        return RsData.of("S-1", "호감 상대를 삭제하였습니다.".formatted(id), likeablePerson);
+        likeablePersonRepository.delete(likeablePerson); // delteById(likeablePerson.getId());
+        return RsData.of("S-1", "호감 상대를 삭제하였습니다.", likeablePerson);
     }
 
 }

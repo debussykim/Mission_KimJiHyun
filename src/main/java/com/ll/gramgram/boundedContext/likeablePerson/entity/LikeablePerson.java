@@ -27,7 +27,8 @@ public class LikeablePerson {
     @LastModifiedDate
     private LocalDateTime modifyDate;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "from_insta_member_id")
     private InstaMember fromInstaMember; // 호감을 표시한 사람(인스타 멤버)
     private String fromInstaMemberUsername; // 혹시 몰라서 기록
     @ManyToOne
