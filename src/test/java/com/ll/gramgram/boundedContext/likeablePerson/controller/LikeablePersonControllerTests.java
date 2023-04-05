@@ -157,17 +157,18 @@ public class LikeablePersonControllerTests {
 
     @Test
     @DisplayName("호감 상대 삭제")
+    @WithUserDetails("user1")
     void t006() throws Exception {
         //WHEN
         ResultActions resultActions = mvc
                 .perform(post("/likeablePerson/delete")
-                        .param("likeablePerson", "3"))
+                        .param("id", "3"))
                 .andDo(print());
 
         //THEN
         resultActions
                 .andExpect(handler().handlerType(LikeablePersonController.class))
-                .andExpect(handler().methodName("deleteLikeablePerson"))
+                .andExpect(handler().methodName("delete"))
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/likeablePerson/list"));
     }
