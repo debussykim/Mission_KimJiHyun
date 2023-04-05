@@ -63,7 +63,7 @@ public class LikeablePersonController {
 
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/delete/{id}")
-    public String delete(@RequestParam Integer id) {
+    public String delete(@PathVariable("id") Integer id) {
         Member member = rq.getMember();
         RsData<LikeablePerson> deleteRsData = likeablePersonService.delete(id, member);
 
