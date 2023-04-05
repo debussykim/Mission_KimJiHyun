@@ -6,6 +6,7 @@ import com.ll.gramgram.boundedContext.instaMember.service.InstaMemberService;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.repository.LikeablePersonRepository;
 import com.ll.gramgram.boundedContext.member.entity.Member;
+import com.ll.gramgram.boundedContext.member.service.MemberService;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -13,7 +14,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestParam;
 
+import java.security.Principal;
 import java.util.List;
 import java.util.Optional;
 
@@ -55,15 +58,19 @@ public class LikeablePersonService {
     }
 
     @Transactional
-    public RsData<LikeablePerson> delete(Long id) {
-        List<LikeablePerson> listLikeablePerson = likeablePersonRepository.findByFromInstaMemberId(id);
-        if (listLikeablePerson.isEmpty()) {
-            return RsData.of("F-1", "id가 %d인 호감상대가 존재하지 않습니다.".formatted(id));
+    public RsData<LikeablePerson> delete(@RequestParam("id") Long id) {
+        Optional<LikeablePerson> opLikeablePerson = likeablePersonRepository.findById(id);
+        if (opLikeablePerson.isEmpty()) {
+            return RsData.of("F-1", "호감상대가 존재하지 않습니다.".formatted(id));
         }
 
-        LikeablePerson likeablePerson = listLikeablePerson.get();
-        likeablePersonRepository.deleteById(likeablePerson);
-        return RsData.of("S-1", "id %d인 호감 상대를 삭제 성공하였습니다.".formatted(id), likeablePerson);
+        LikeablePerson likeablePerson = opLikeablePerson.get();
+        if (!likeablePerson.getFromInstaMember().getId().equals(instaMemberService.findByUsername())) {
+            return RsData.of("F-2", "호감 상대를 삭제할 수 있는 권한이 없습니다.");
+        }
+
+        likeablePersonRepository.deleteById(id); // delteById(likeablePerson.getId());
+        return RsData.of("S-1", "호감 상대를 삭제하였습니다.".formatted(id), likeablePerson);
     }
 
 }

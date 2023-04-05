@@ -157,13 +157,13 @@ public class LikeablePersonControllerTests {
 
     @Test
     @DisplayName("호감 상대 삭제")
-    @WithUserDetails("user1")
+    @WithUserDetails("user2")
     void t006() throws Exception {
         //WHEN
         ResultActions resultActions = mvc
                 .perform(post("/likeablePerson/delete")
-                        .param("id", "3"))
-                .andDo(print());
+                        .param("id", "1"))
+                .andDo(print());정
 
         //THEN
         resultActions
