@@ -71,7 +71,7 @@ public class LikeablePersonService {
             return RsData.of("F-2", "호감 상대를 삭제할 수 있는 권한이 없습니다.");
         }
 
-        likeablePersonRepository.delete(likeablePerson); // delteById(likeablePerson.getId());
+        likeablePersonRepository.delete(likeablePerson);
         return RsData.of("S-1", "호감 상대를 삭제하였습니다.", likeablePerson);
     }
 
