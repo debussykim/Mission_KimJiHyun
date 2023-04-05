@@ -62,7 +62,7 @@ public class LikeablePersonService {
         }
 
         LikeablePerson likeablePerson = listLikeablePerson.get();
-        likeablePersonRepository.delete(likeablePerson);
+        likeablePersonRepository.deleteById(likeablePerson);
         return RsData.of("S-1", "id %d인 호감 상대를 삭제 성공하였습니다.".formatted(id), likeablePerson);
     }
 
