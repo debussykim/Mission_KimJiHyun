@@ -161,8 +161,7 @@ public class LikeablePersonControllerTests {
     void t006() throws Exception {
         //WHEN
         ResultActions resultActions = mvc
-                .perform(post("/likeablePerson/delete/1")
-                        .param("id", "3"))
+                .perform(get("/likeablePerson/delete/1"))
                 .andDo(print());
 
         //THEN
@@ -170,7 +169,7 @@ public class LikeablePersonControllerTests {
                 .andExpect(handler().handlerType(LikeablePersonController.class))
                 .andExpect(handler().methodName("delete"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/likeablePerson/list"));
+                .andExpect(redirectedUrlPattern("/likeablePerson/list**"));
     }
 
 }

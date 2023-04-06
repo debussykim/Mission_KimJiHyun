@@ -59,7 +59,7 @@ public class LikeablePersonService {
     }
 
     @Transactional
-    public RsData<LikeablePerson> delete(@PathVariable Integer id, Member member) {
+    public RsData<LikeablePerson> delete(Long id, Member member) {
         Optional<LikeablePerson> opLikeablePerson = likeablePersonRepository.findById(id);
         if (opLikeablePerson.isEmpty()) {
             return RsData.of("F-1", "호감상대가 존재하지 않습니다.");
