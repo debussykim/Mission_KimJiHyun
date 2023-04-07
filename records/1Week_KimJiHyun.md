@@ -169,3 +169,35 @@ WARN 45241 --- [nio-8080-exec-1] .w.s.m.s.DefaultHandlerExceptionResolver : Reso
 
 - 삭제 시 발생한 오류 수정
 - 테스트 케이스 통과하도록 수정
+
+
+1. URL 리다이렉트에 대한 오류 수정
+
+```
+.andExpect(redirectedUrlPattern("/likeablePerson/list**"));
+```
+기존 코드로 실행했을 때 출력되는 메세지는 다음과 같습니다.
+
+기댓값: `/likeablePerson/list`
+
+실제값: `/likeablePerson/list?msg=insta_user3~~`
+
+기댓값처럼 출력되도록 list → list**로 수정해주었습니다. 이 뜻은 redirect된 url 패턴에 `list` 가 포함되어 있어야 하는 것을 의미합니다.
+
+여기서 `**` 는 0개 이상의 디렉토리를 나타내는 와일드카드 문자입니다. 스프링부트에서는 이 패턴을 주로 URL 패턴 매칭에 사용합니다. 예를 들어, `/api/**` 와 같이 사용하면 /api 경로를 포함한 모든 하위 경로를 매칭할 수 있습니다.
+
+추가로 redirectedUrl과 redirectedUrlPattern의 차이점에 대해 공부해보았습니다.
+
+- redirectedUrl : 리다이렉트 대상의 경로 또는 URL 검증
+- redirectedUrlPattern : 리다이렉트 대상의 경로 또는 URL 패턴 검증
+
+그 중 redirectedUrlPattern은 redirect된 URL이 정규표현식으로 매칭되는지 확인하는데 사용됩니다. 정규표현식은 문자열에서 특정 문자 조합을 찾기 위한 패턴입니다. 예를 들어, ".*"는 어떤 문자열이든 매칭됩니다. redirectedUrlPattern은 이러한 정규표현식을 사용하여 redirect된 URL이 매칭되는지 확인합니다.
+
+URL 패턴: URL에서 특정한 문자열 패턴을 찾기 위한 규칙입니다. 이러한 URL 패턴은 서블릿 매핑 이름으로 사용되며, 클라이언트가 브라우저에서 요청할 때 사용됩니다.
+
+
+2. Long타입
+```
+public RsData<LikeablePerson> delete(Long id, Member member) {
+```
+`@PathVariable` 는 필요하지 않기 때문에 삭제해주었습니다. 기존에 오류가 났던 이유는 `likeablePerson` 객체의 id값이 Long이였기 때문이였습니다. Repository의 pk 타입을 Long으로 바꾸고 RsData의 매개변수 또한 Long으로 해주어 오류를 해결하였습니다.
