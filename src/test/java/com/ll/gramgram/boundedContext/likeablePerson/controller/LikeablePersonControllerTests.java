@@ -1,6 +1,9 @@
 package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
 
+import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
+import com.ll.gramgram.boundedContext.instaMember.repository.InstaMemberRepository;
+import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.service.LikeablePersonService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -12,6 +15,9 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
@@ -29,6 +35,9 @@ public class LikeablePersonControllerTests {
 
     @Autowired
     private LikeablePersonService likeablePersonService;
+
+    @Autowired
+    private InstaMemberRepository instaMemberService;
 
     @Test
     @DisplayName("등록 폼(인스타 인증을 안해서 폼 대신 메세지)")
@@ -215,5 +224,37 @@ public class LikeablePersonControllerTests {
         ;
 
         assertThat(likeablePersonService.findById(1L).isPresent()).isEqualTo(true);
+    }
+
+    @Test
+    @DisplayName("호감표시 10명 제한")
+    @WithUserDetails("user3")
+    void t011() throws Exception {
+        // GIVEN
+        InstaMember instaMember = instaMemberService.findByUsername("insta_user4").get();
+        List<LikeablePerson> beforeLikeablePeople = instaMember.getFromLikeablePeople();
+
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(post("/likeablePerson/add")
+                        .with(csrf()) // CSRF 키 생성
+                        .param("username", "insta_user13")
+                        .param("attractiveTypeCode", "2")
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("add"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(request().attribute("historyBackErrorMsg", "호감상대는 최대 10명까지 등록 가능합니다."));
+
+        // 이전과 호감 상대 등록 개수가 변하지 않았는지 확인
+        InstaMember updatedInstaMember = instaMemberService.findByUsername("insta_user4").get();
+        List<LikeablePerson> afterLikeablePeople = updatedInstaMember.getFromLikeablePeople();
+        assertThat(afterLikeablePeople.size()).isEqualTo(beforeLikeablePeople.size());
+        assertThat(afterLikeablePeople).containsExactlyElementsOf(beforeLikeablePeople);
+
     }
 }

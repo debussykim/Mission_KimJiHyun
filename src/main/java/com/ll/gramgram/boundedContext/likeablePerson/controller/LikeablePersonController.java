@@ -1,5 +1,6 @@
 package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
+import com.ll.gramgram.base.appConfig.AppConfig;
 import com.ll.gramgram.base.rq.Rq;
 import com.ll.gramgram.base.rsData.RsData;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
@@ -39,6 +40,14 @@ public class LikeablePersonController {
 
     @PostMapping("/add")
     public String add(@Valid AddForm addForm) {
+
+        // member.getInstaMember().getFromLikeablePeople()에서 size()로 등록한 호감 상대 수 체크
+        InstaMember instaMember = rq.getMember().getInstaMember();
+        List<LikeablePerson> fromLikeablePeopleList = instaMember.getFromLikeablePeople();
+        if (fromLikeablePeopleList.size() >= 10) {
+            return rq.historyBack(RsData.of("F-3", "호감상대는 최대 10명까지 등록 가능합니다."));
+        }
+
         RsData<LikeablePerson> createRsData = likeablePersonService.like(rq.getMember(), addForm.getUsername(), addForm.getAttractiveTypeCode());
 
         if (createRsData.isFail()) {
