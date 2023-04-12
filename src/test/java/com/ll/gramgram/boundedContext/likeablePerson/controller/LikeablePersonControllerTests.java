@@ -257,4 +257,57 @@ public class LikeablePersonControllerTests {
         assertThat(afterLikeablePeople).containsExactlyElementsOf(beforeLikeablePeople);
 
     }
+
+    @Test
+    @DisplayName("중복으로 호감표시 불가(user3가 insta_user4에게 호감표시(성격))")
+    @WithUserDetails("user3")
+    void t012() throws Exception {
+
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(post("/likeablePerson/add")
+                        .with(csrf()) // generate CSRF key
+                        .param("username", "insta_user4")
+                        .param("attractiveTypeCode", "2")
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("add"))
+                .andExpect(status().is4xxClientError())
+                .andExpect(request().attribute("historyBackErrorMsg", "이미 호감표시한 회원입니다."));
+
+    }
+
+    @Test
+    @DisplayName("호감표시가 다르면 업데이트")
+    @WithUserDetails("user3")
+    void t010() throws Exception {
+        // WHEN
+        ResultActions resultActions = mvc
+                .perform(post("/likeablePerson/add")
+                        .with(csrf()) // CSRF 키 생성
+                        .param("username", "insta_user4")
+                        .param("attractiveTypeCode", "1")
+                )
+                .andDo(print());
+
+        // THEN
+        resultActions
+                .andExpect(handler().handlerType(LikeablePersonController.class))
+                .andExpect(handler().methodName("add"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrlPattern("/likeablePerson/list**"));
+
+        long count = instaMemberService.findByUsername("insta_user3").get()
+                .getFromLikeablePeople()
+                .stream()
+                .filter(lq -> lq.getToInstaMember().getUsername().equals("insta_user4"))
+                .count();
+
+        assertThat(count).isOne();
+    }
+
 }

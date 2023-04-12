@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 import static jakarta.persistence.GenerationType.IDENTITY;
 
-@Builder
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
 @EntityListeners(AuditingEntityListener.class)
@@ -43,5 +43,9 @@ public class LikeablePerson {
             case 2 -> "성격";
             default -> "능력";
         };
+    }
+
+    public void setAttractiveTypeCode(int attractiveTypeCode) {
+        this.attractiveTypeCode = attractiveTypeCode;
     }
 }
