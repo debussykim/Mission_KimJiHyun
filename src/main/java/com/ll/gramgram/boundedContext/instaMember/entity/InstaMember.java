@@ -7,88 +7,58 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 import org.hibernate.annotations.LazyCollection;
 import org.hibernate.annotations.LazyCollectionOption;
-
 import java.util.ArrayList;
 import java.util.List;
-
-
 @Entity
 @Getter
 @NoArgsConstructor
 @SuperBuilder
 @ToString(callSuper = true)
-public class InstaMember extends BaseEntity {
+public class InstaMember extends InstaMemberBase {
+    @Setter
     @Column(unique = true)
     private String username;
+
     @Setter
-    private String gender;
+    @Column(unique = true)
+    private String oauthId;
 
-    private long likesCountByGenderWomanAndAttractiveTypeCode1;
-    private long likesCountByGenderWomanAndAttractiveTypeCode2;
-    private long likesCountByGenderWomanAndAttractiveTypeCode3;
-    private long likesCountByGenderManAndAttractiveTypeCode1;
-    private long likesCountByGenderManAndAttractiveTypeCode2;
-    private long likesCountByGenderManAndAttractiveTypeCode3;
-
-    public Long getLikesCountByGenderWoman() {
-        return likesCountByGenderWomanAndAttractiveTypeCode1 + likesCountByGenderWomanAndAttractiveTypeCode2 + likesCountByGenderWomanAndAttractiveTypeCode3;
-    }
-
-    public Long getLikesCountByGenderMan() {
-        return likesCountByGenderManAndAttractiveTypeCode1 + likesCountByGenderManAndAttractiveTypeCode2 + likesCountByGenderManAndAttractiveTypeCode3;
-    }
-
-    public Long getLikesCountByAttractionTypeCode1() {
-        return likesCountByGenderWomanAndAttractiveTypeCode1 + likesCountByGenderManAndAttractiveTypeCode1;
-    }
-
-    public Long getLikesCountByAttractionTypeCode2() {
-        return likesCountByGenderWomanAndAttractiveTypeCode2 + likesCountByGenderManAndAttractiveTypeCode2;
-    }
-
-    public Long getLikesCountByAttractionTypeCode3() {
-        return likesCountByGenderWomanAndAttractiveTypeCode3 + likesCountByGenderManAndAttractiveTypeCode3;
-    }
-
-    public Long getLikes() {
-        return getLikesCountByGenderWoman() + getLikesCountByGenderMan();
-    }
+    @Setter
+    private String accessToken;
 
     @OneToMany(mappedBy = "fromInstaMember", cascade = {CascadeType.ALL})
-    @OrderBy("id desc")
+    @OrderBy("id desc") // 정렬
     @LazyCollection(LazyCollectionOption.EXTRA)
-    @Builder.Default
+    @Builder.Default // @Builder 가 있으면 ` = new ArrayList<>();` 가 작동하지 않는다. 그래서 이걸 붙여야 한다.
     private List<LikeablePerson> fromLikeablePeople = new ArrayList<>();
-
     @OneToMany(mappedBy = "toInstaMember", cascade = {CascadeType.ALL})
-    @OrderBy("id desc")
-    @LazyCollection(LazyCollectionOption.EXTRA)
-    @Builder.Default
+    @OrderBy("id desc") // 정렬
+    @Builder.Default // @Builder 가 있으면 ` = new ArrayList<>();` 가 작동하지 않는다. 그래서 이걸 붙여야 한다.
     private List<LikeablePerson> toLikeablePeople = new ArrayList<>();
-
     public void addFromLikeablePerson(LikeablePerson likeablePerson) {
         fromLikeablePeople.add(0, likeablePerson);
     }
-
     public void addToLikeablePerson(LikeablePerson likeablePerson) {
         toLikeablePeople.add(0, likeablePerson);
     }
-
     public void removeFromLikeablePerson(LikeablePerson likeablePerson) {
         fromLikeablePeople.removeIf(e -> e.equals(likeablePerson));
     }
-
     public void removeToLikeablePerson(LikeablePerson likeablePerson) {
         toLikeablePeople.removeIf(e -> e.equals(likeablePerson));
     }
-
     public String getGenderDisplayName() {
         return switch (gender) {
             case "W" -> "여성";
             default -> "남성";
         };
     }
-
+    public String getGenderDisplayNameWithIcon() {
+        return switch (gender) {
+            case "W" -> "<i class=\"fa-solid fa-person-dress\"></i>";
+            default -> "<i class=\"fa-solid fa-person\"></i>";
+        } + "&nbsp;" + getGenderDisplayName();
+    }
     public void increaseLikesCount(String gender, int attractiveTypeCode) {
         if (gender.equals("W") && attractiveTypeCode == 1) likesCountByGenderWomanAndAttractiveTypeCode1++;
         if (gender.equals("W") && attractiveTypeCode == 2) likesCountByGenderWomanAndAttractiveTypeCode2++;
@@ -97,7 +67,6 @@ public class InstaMember extends BaseEntity {
         if (gender.equals("M") && attractiveTypeCode == 2) likesCountByGenderManAndAttractiveTypeCode2++;
         if (gender.equals("M") && attractiveTypeCode == 3) likesCountByGenderManAndAttractiveTypeCode3++;
     }
-
     public void decreaseLikesCount(String gender, int attractiveTypeCode) {
         if (gender.equals("W") && attractiveTypeCode == 1) likesCountByGenderWomanAndAttractiveTypeCode1--;
         if (gender.equals("W") && attractiveTypeCode == 2) likesCountByGenderWomanAndAttractiveTypeCode2--;
@@ -105,5 +74,24 @@ public class InstaMember extends BaseEntity {
         if (gender.equals("M") && attractiveTypeCode == 1) likesCountByGenderManAndAttractiveTypeCode1--;
         if (gender.equals("M") && attractiveTypeCode == 2) likesCountByGenderManAndAttractiveTypeCode2--;
         if (gender.equals("M") && attractiveTypeCode == 3) likesCountByGenderManAndAttractiveTypeCode3--;
+    }
+    public void updateGender(String gender) {
+        this.gender = gender;
+    }
+    public InstaMemberSnapshot snapshot(String eventTypeCode) {
+        return InstaMemberSnapshot
+                .builder()
+                .eventTypeCode(eventTypeCode)
+                .username(username)
+                .instaMember(this)
+                .gender(gender)
+                .likesCountByGenderManAndAttractiveTypeCode1(likesCountByGenderManAndAttractiveTypeCode1)
+                .likesCountByGenderManAndAttractiveTypeCode2(likesCountByGenderManAndAttractiveTypeCode2)
+                .likesCountByGenderManAndAttractiveTypeCode3(likesCountByGenderManAndAttractiveTypeCode3)
+                .likesCountByGenderWomanAndAttractiveTypeCode1(likesCountByGenderWomanAndAttractiveTypeCode1)
+                .likesCountByGenderWomanAndAttractiveTypeCode2(likesCountByGenderWomanAndAttractiveTypeCode2)
+                .likesCountByGenderWomanAndAttractiveTypeCode3(likesCountByGenderWomanAndAttractiveTypeCode3)
+                .build();
+
     }
 }
