@@ -206,7 +206,7 @@ public class LikeablePersonControllerTests {
     }
 
     @Test
-    @DisplayName("호감삭제(권한이 없는 경우, 삭제가 안됨)")
+    @DisplayName("호감취소(권한이 없는 경우, 취소가 안됨)")
     @WithUserDetails("user2")
     void t008() throws Exception {
         // WHEN
@@ -220,7 +220,7 @@ public class LikeablePersonControllerTests {
         // THEN
         resultActions
                 .andExpect(handler().handlerType(LikeablePersonController.class))
-                .andExpect(handler().methodName("delete"))
+                .andExpect(handler().methodName("cancel"))
                 .andExpect(status().is4xxClientError())
         ;
 

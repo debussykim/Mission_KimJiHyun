@@ -91,7 +91,7 @@ public class LikeablePersonService {
     }
 
     @Transactional
-    public RsData delete(LikeablePerson likeablePerson) {
+    public RsData cancel(LikeablePerson likeablePerson) {
         // 사용자가 생성한 '좋아요' 삭제
         likeablePerson.getFromInstaMember().removeFromLikeablePerson(likeablePerson);
 
@@ -104,7 +104,7 @@ public class LikeablePersonService {
     }
 
     //@Transactional
-    public RsData canDelete(Member actor, LikeablePerson likeablePerson) {
+    public RsData canCancel(Member actor, LikeablePerson likeablePerson) {
         if (likeablePerson == null) {
             return RsData.of("F-1", "이미 삭제되었습니다.");
         }
