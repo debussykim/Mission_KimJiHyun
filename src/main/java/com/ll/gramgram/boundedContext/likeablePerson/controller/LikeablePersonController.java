@@ -40,13 +40,9 @@ public class LikeablePersonController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/add")
     public String add(@Valid AddForm addForm) {
+        RsData canLikeRsData = likeablePersonService.canLike(rq.getMember(), addForm.getUsername(), addForm.getAttractiveTypeCode());
 
-        // member.getInstaMember().getFromLikeablePeople()에서 size()로 등록한 호감 상대 수 체크
-        InstaMember instaMember = rq.getMember().getInstaMember();
-        List<LikeablePerson> fromLikeablePeopleList = instaMember.getFromLikeablePeople();
-        if (fromLikeablePeopleList.size() >= 10) {
-            return rq.historyBack(RsData.of("F-3", "호감상대는 최대 10명까지 등록 가능합니다."));
-        }
+        if (canLikeRsData.isFail()) return rq.historyBack(canLikeRsData);
 
         RsData<LikeablePerson> createRsData = likeablePersonService.like(rq.getMember(), addForm.getUsername(), addForm.getAttractiveTypeCode());
 
@@ -76,7 +72,7 @@ public class LikeablePersonController {
     public String delete(@PathVariable Long id) {
         LikeablePerson likeablePerson = likeablePersonService.findById(id).orElse(null);
 
-        RsData canActorDeleteRsData = likeablePersonService.canActorDelete(rq.getMember(), likeablePerson);
+        RsData canActorDeleteRsData = likeablePersonService.canDelete(rq.getMember(), likeablePerson);
 
         if (canActorDeleteRsData.isFail()) {
             return rq.historyBack(canActorDeleteRsData);
