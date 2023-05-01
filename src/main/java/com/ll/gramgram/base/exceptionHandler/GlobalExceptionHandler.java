@@ -7,10 +7,4 @@ import org.springframework.web.servlet.NoHandlerFoundException;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
-
-    @ExceptionHandler(NoHandlerFoundException.class)
-    public String handleNotFoundError(Model model, NoHandlerFoundException ex) {
-        model.addAttribute("exception", ex);
-        return "error/404";
-    }
 }

@@ -1,14 +1,12 @@
 package com.ll.gramgram.boundedContext.likeablePerson.controller;
 
-import com.ll.gramgram.base.appConfig.AppConfig;
 import com.ll.gramgram.base.rq.Rq;
 import com.ll.gramgram.base.rsData.RsData;
 import com.ll.gramgram.boundedContext.instaMember.entity.InstaMember;
 import com.ll.gramgram.boundedContext.likeablePerson.entity.LikeablePerson;
 import com.ll.gramgram.boundedContext.likeablePerson.service.LikeablePersonService;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
+import jakarta.validation.constraints.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -38,9 +36,9 @@ public class LikeablePersonController {
         @NotBlank
         @Size(min = 3, max = 30)
         private final String username;
-
-        @NotBlank
-        @Size(min = 1, max = 1)
+        @NotNull
+        @Min(1)
+        @Max(3)
         private final int attractiveTypeCode;
     }
 
@@ -52,6 +50,7 @@ public class LikeablePersonController {
         if (rsData.isFail()) {
             return rq.historyBack(rsData);
         }
+
         return rq.redirectWithMsg("/usr/likeablePerson/list", rsData);
     }
 
@@ -62,6 +61,7 @@ public class LikeablePersonController {
 
         // 인스타인증을 했는지 체크
         if (instaMember != null) {
+            // 해당 인스타회원이 좋아하는 사람들 목록
             List<LikeablePerson> likeablePeople = instaMember.getFromLikeablePeople();
             model.addAttribute("likeablePeople", likeablePeople);
         }
@@ -76,16 +76,11 @@ public class LikeablePersonController {
 
         RsData canDeleteRsData = likeablePersonService.canCancel(rq.getMember(), likeablePerson);
 
-        if (canDeleteRsData.isFail()) {
-            return rq.historyBack(canDeleteRsData);
-        }
-
+        if (canDeleteRsData.isFail()) return rq.historyBack(canDeleteRsData);
 
         RsData deleteRsData = likeablePersonService.cancel(likeablePerson);
 
-        if (deleteRsData.isFail()) {
-            return rq.historyBack(deleteRsData);
-        }
+        if (deleteRsData.isFail()) return rq.historyBack(deleteRsData);
 
         return rq.redirectWithMsg("/usr/likeablePerson/list", deleteRsData);
     }
@@ -97,25 +92,39 @@ public class LikeablePersonController {
 
         RsData canModifyRsData = likeablePersonService.canModifyLike(rq.getMember(), likeablePerson);
 
-        if (canModifyRsData.isFail())
-            return rq.historyBack(canModifyRsData);
+        if (canModifyRsData.isFail()) return rq.historyBack(canModifyRsData);
 
         model.addAttribute("likeablePerson", likeablePerson);
 
         return "usr/likeablePerson/modify";
     }
+
     @AllArgsConstructor
     @Getter
     public static class ModifyForm {
+        @NotNull
+        @Min(1)
+        @Max(3)
         private final int attractiveTypeCode;
     }
+
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/modify/{id}")
     public String modify(@PathVariable Long id, @Valid ModifyForm modifyForm) {
-        RsData<LikeablePerson> rsData = likeablePersonService.modifyLike(rq.getMember(), id, modifyForm.getAttractiveTypeCode());
+        RsData<LikeablePerson> rsData = likeablePersonService.modifyAttractive(rq.getMember(), id, modifyForm.getAttractiveTypeCode());
+
         if (rsData.isFail()) {
             return rq.historyBack(rsData);
         }
+
         return rq.redirectWithMsg("/usr/likeablePerson/list", rsData);
+    }
+
+    @PreAuthorize("isAuthenticated()")
+    @GetMapping("/toList")
+    @ResponseBody
+    public String showToList(Model model) {
+        //TODO : showToList 구현
+        return "usr/likeablePerson/toList 구현해야 함";
     }
 }

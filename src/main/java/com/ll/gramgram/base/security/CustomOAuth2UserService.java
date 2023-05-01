@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
@@ -28,9 +29,8 @@ import java.util.Map;
 @Slf4j
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
     private final MemberService memberService;
-    private final Rq rq;
     private final InstaMemberService instaMemberService;
-
+    private final Rq rq;
 
     // 카카오톡 로그인이 성공할 때 마다 이 함수가 실행된다.
     @Override
@@ -48,6 +48,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             RestTemplate restTemplate = new RestTemplate();
             HttpEntity<String> entity = new HttpEntity<>(new HttpHeaders());
             ResponseEntity<Map> response = restTemplate.exchange(userInfoUri, HttpMethod.GET, entity, Map.class);
+
             Map<String, String> userAttributes = response.getBody();
 
             String gender = rq.getSessionAttr("connectByApi__gender", "W");
@@ -61,7 +62,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         OAuth2User oAuth2User = super.loadUser(userRequest);
 
-        String oauthId = oAuth2User.getName();
+        String oauthId = switch (providerTypeCode) {
+            case "NAVER" -> ((Map<String, String>) oAuth2User.getAttributes().get("response")).get("id");
+            default -> oAuth2User.getName();
+        };
 
         String username = providerTypeCode + "__%s".formatted(oauthId);
 
