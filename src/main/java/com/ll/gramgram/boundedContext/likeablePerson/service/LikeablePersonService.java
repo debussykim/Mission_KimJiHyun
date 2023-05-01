@@ -91,6 +91,11 @@ public class LikeablePersonService {
 
     @Transactional
     public RsData delete(LikeablePerson likeablePerson) {
+        // 사용자가 생성한 '좋아요' 삭제
+        likeablePerson.getFromInstaMember().removeFromLikeablePerson(likeablePerson);
+
+        // 사용자가 받은 '좋아요' 삭제
+        likeablePerson.getToInstaMember().removeToLikeablePerson(likeablePerson);
         likeablePersonRepository.delete(likeablePerson);
 
         String likeCanceledUsername = likeablePerson.getToInstaMember().getUsername();
