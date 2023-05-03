@@ -15,6 +15,8 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -96,6 +98,15 @@ public class LikeablePersonService {
         if (actorInstaMemberId != fromInstaMemberId)
             return RsData.of("F-2", "권한이 없습니다.");
 
+        if(!likeablePerson.isModifyUnlocked()) {
+            return RsData.of("F-3", "해당 호감표시를 취소할 수 있는 시간이 아닙니다.");
+        }
+
+        if (!likeablePerson.isModifyUnlocked()) {
+            String remainingTime = likeablePerson.getModifyUnlockDateRemainStrHuman();
+            return RsData.of("F-3", "%s까지는 호감 표시를 취소하거나 수정할 수 없습니다.".formatted(remainingTime));
+        }
+
         return RsData.of("S-1", "삭제가능합니다.");
     }
 
@@ -133,6 +144,12 @@ public class LikeablePersonService {
         if (fromLikeablePeople.size() >= likeablePersonFromMax) {
             return RsData.of("F-4", "최대 %d명에 대해서만 호감표시가 가능합니다.".formatted(likeablePersonFromMax));
         }
+
+        if (!fromLikeablePerson.isModifyUnlocked()) {
+            String remainingTime = fromLikeablePerson.getModifyUnlockDateRemainStrHuman();
+            return RsData.of("F-3", "%s까지는 호감 표시를 취소하거나 수정할 수 없습니다.".formatted(remainingTime));
+        }
+
 
         return RsData.of("S-1", "%s님에 대해서 호감표시가 가능합니다.".formatted(username));
     }
@@ -209,6 +226,10 @@ public class LikeablePersonService {
             return RsData.of("F-2", "해당 호감표시를 취소할 수 있는 권한이 없습니다.");
         }
 
+        if (!likeablePerson.isModifyUnlocked()) {
+            String remainingTime = likeablePerson.getModifyUnlockDateRemainStrHuman();
+            return RsData.of("F-3", "%s까지는 호감 표시를 취소하거나 수정할 수 없습니다.".formatted(remainingTime));
+        }
 
         return RsData.of("S-1", "호감표시취소가 가능합니다.");
     }
