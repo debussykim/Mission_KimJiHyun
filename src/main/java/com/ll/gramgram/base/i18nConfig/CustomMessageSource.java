@@ -27,7 +27,7 @@ public class CustomMessageSource extends ResourceBundleMessageSource {
     }
 
     public String replaceVariablesToString(String code, Locale locale) {
-        StringBuffer result = new StringBuffer();
+        StringBuilder result = new StringBuilder();
         Matcher matcher = VARIABLE_PATTERN.matcher(code);
 
         while (matcher.find()) {
