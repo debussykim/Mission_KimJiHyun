@@ -15,6 +15,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -133,31 +134,35 @@ public class LikeablePersonController {
             Stream<LikeablePerson> likeablePeopleStream = instaMember.getToLikeablePeople().stream();
 
             if (gender != null) {
-                // likeablePeopleStream = likeablePeopleStream.filter();
+                likeablePeopleStream = likeablePeopleStream.filter(person -> person.getFromInstaMember().getGender().equals(gender));
             }
 
             if (attractiveTypeCode != 0) {
-                // likeablePeopleStream = likeablePeopleStream.filter();
+                likeablePeopleStream = likeablePeopleStream.filter(person -> person.getAttractiveTypeCode() == attractiveTypeCode);
             }
 
             switch (sortCode) {
-                case 1:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 1: // 최신순(기본) : 최근에 받은 호감표시를 우선적으로 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparing(LikeablePerson::getCreateDate));
                     break;
-                case 2:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 2: // 날짜순 : 오래전에 받은 호감표시를 우선적으로 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparing(LikeablePerson::getCreateDate).reversed());
                     break;
-                case 3:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 3: // 인기 많은 순 : 인기가 많은 사람의 호감표시를 우선적으로 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode));
                     break;
-                case 4:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 4: // 인기 적은 순 : 인기가 적은 사람의 호감표시를 우선적으로 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode).reversed());
                     break;
-                case 5:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 5: // 성별순(여성 우선순위), 2순위 정렬조건으로 최신순 : 여성에게 받은 호감표시를 먼저 표시하고, 그 다음 남자에게 받은 호감표시를 후에 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparing(person -> person.getFromInstaMember().getGender()));
+                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparing(LikeablePerson::getCreateDate));
                     break;
-                case 6:
-                    // likeablePeopleStream = likeablePeopleStream.sorted(??);
+                case 6: // 호감사유순(우선순위 외모1, 성격2, 능력3), 2순위 정렬조건으로 최신순 : 외모 때문에 받은 호감표시를 먼저 표시하고, 그 다음 성격 때문에 받은 호감표시를 후에 표시, 마지막으로 능력 때문에 받은 호감표시를 후에 표시
+                    likeablePeopleStream = likeablePeopleStream.sorted(
+                            Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode)
+                                    .thenComparing(LikeablePerson::getCreateDate)
+                    );
                     break;
 
             }
