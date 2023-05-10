@@ -155,9 +155,10 @@ public class LikeablePersonController {
                     likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparingInt(LikeablePerson::getAttractiveTypeCode).reversed());
                     break;
                 case 5: // 성별순(여성 우선순위), 2순위 정렬조건으로 최신순 : 여성에게 받은 호감표시를 먼저 표시하고, 그 다음 남자에게 받은 호감표시를 후에 표시
-                    likeablePeopleStream = likeablePeopleStream.sorted(Comparator.comparing(person -> person.getFromInstaMember().getGender().equals("여") ? 0 : 1))
-                            .thenComparing(Comparator.comparing(LikeablePerson::getCreateDate)
-                            );
+                    likeablePeopleStream = likeablePeopleStream
+                            .sorted(Comparator.comparing((LikeablePerson person) -> person.getFromInstaMember().getGender())
+                                    .thenComparing(LikeablePerson::getCreateDate)
+                                    .reversed());
                     break;
                 case 6: // 호감사유순(우선순위 외모1, 성격2, 능력3), 2순위 정렬조건으로 최신순 : 외모 때문에 받은 호감표시를 먼저 표시하고, 그 다음 성격 때문에 받은 호감표시를 후에 표시, 마지막으로 능력 때문에 받은 호감표시를 후에 표시
                     likeablePeopleStream = likeablePeopleStream.sorted(
